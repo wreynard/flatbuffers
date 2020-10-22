@@ -229,6 +229,9 @@ struct Value {
         offset(static_cast<voffset_t>(~(static_cast<voffset_t>(0U)))) {}
   Type type;
   std::string constant;
+// TOME_EDIT - WR: Tracking hashed strings to use later
+  std::string hashSource;
+// TOME_END
   voffset_t offset;
 };
 
@@ -630,6 +633,25 @@ inline bool operator<(const IncludedFile &a, const IncludedFile &b) {
   return a.filename < b.filename;
 }
 
+// TOME_EDIT - WR: reference and dependency tracking
+struct ExternalRef
+{
+    ExternalRef() = default;
+    ExternalRef(const std::string& _file, Value* _reftype)
+        : file(_file)
+        , type(_reftype)
+    {
+    }
+
+    std::string file;
+    Value* type;
+};
+
+inline bool operator<(const ExternalRef& lhs, const ExternalRef& rhs) {
+    return lhs.file < rhs.file;
+}
+// TOME_END
+
 // Container of options that may apply to any of the source/text generators.
 struct IDLOptions {
   // field case style options for C++
@@ -1004,6 +1026,14 @@ class Parser : public ParserState {
     // An attribute added to a vector field to indicate that it uses 64-bit
     // addressing and it has a 64-bit length.
     known_attributes_["vector64"] = true;
+
+    // TOME_EDIT - WR: Adding a mechanism to default a string to a different JSON field
+    known_attributes_["default"] = true;
+    // TOME_END
+    // TOME_EDIT - WR: Tracking references and dependencies
+    known_attributes_["reference"] = true;
+    known_attributes_["dependency"] = true;
+    // TOME_END
   }
 
   // Copying is not allowed
@@ -1220,6 +1250,11 @@ class Parser : public ParserState {
   std::map<uint64_t, std::string> included_files_;
   std::map<std::string, std::set<IncludedFile>> files_included_per_file_;
   std::vector<std::string> native_included_files_;
+
+  // TOME_EDIT - WR: Tracking references and dependencies
+  std::set<ExternalRef> referenced_files_;
+  std::set<ExternalRef> dependency_files_;
+  // TOME_END
 
   std::map<std::string, bool> known_attributes_;
 

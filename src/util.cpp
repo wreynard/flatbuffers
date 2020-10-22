@@ -63,6 +63,16 @@ static bool FileExistsRaw(const char *name) {
   return ifs.good();
 }
 
+// TOME_EDIT - WR: Adding a mechanism to locate reflection.fbs file (only works on machine that ran premake)
+static const char* ReflectionFbsPath()
+{
+#ifndef PATH_REFLECTION_FBS
+#define PATH_REFLECTION_FBS "."
+#endif
+    return PATH_REFLECTION_FBS;
+}
+// TOME_END
+
 static bool LoadFileRaw(const char *name, bool binary, std::string *buf) {
   if (DirExists(name)) return false;
   std::ifstream ifs(name, binary ? std::ifstream::binary : std::ifstream::in);
