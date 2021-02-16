@@ -182,7 +182,7 @@ inline bool operator!=(const EquipmentUnion &lhs, const EquipmentUnion &rhs) {
 bool VerifyEquipment(::flatbuffers::Verifier &verifier, const void *obj, Equipment type);
 bool VerifyEquipmentVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<uint8_t> *types);
 
-FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vec3 final {
  private:
   float x_;
   float y_;
@@ -469,7 +469,18 @@ struct WeaponT : public ::flatbuffers::NativeTable {
   int16_t damage = 0;
 };
 
-struct Weapon FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+inline bool operator==(const WeaponT &lhs, const WeaponT &rhs) {
+  return
+      (lhs.name == rhs.name) &&
+      (lhs.damage == rhs.damage);
+}
+
+inline bool operator!=(const WeaponT &lhs, const WeaponT &rhs) {
+    return !(lhs == rhs);
+}
+
+
+struct Weapon FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef WeaponT NativeTableType;
   typedef WeaponBuilder Builder;
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
@@ -891,6 +902,10 @@ inline bool VerifyMonsterBuffer(
 inline bool VerifySizePrefixedMonsterBuffer(
     ::flatbuffers::Verifier &verifier) {
   return verifier.VerifySizePrefixedBuffer<MyGame::Sample::Monster>(nullptr);
+}
+
+constexpr char* MonsterRootName() {
+ return "MyGame.Sample.Monster";
 }
 
 inline void FinishMonsterBuffer(

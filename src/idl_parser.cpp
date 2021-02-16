@@ -2990,6 +2990,12 @@ bool Parser::SetRootType(const char *name) {
   if (!root_struct_def_)
     root_struct_def_ =
         LookupStruct(current_namespace_->GetFullyQualifiedName(name));
+  // TOME_EDIT - WR: Adding root type name string to code generation
+  if (root_struct_def_)
+  {
+    root_type_name_ = current_namespace_->GetFullyQualifiedName(name);
+  }
+  // TOME_END
   return root_struct_def_ != nullptr;
 }
 
@@ -3823,6 +3829,9 @@ CheckedError Parser::DoParse(const char *source, const char **include_paths,
         root_struct_def_ = nullptr;
         file_identifier_.clear();
         file_extension_.clear();
+// TOME_EDIT - WR: Adding root type name string to code generation
+        root_type_name_.clear();
+// TOME_END
         // This is the easiest way to continue this file after an include:
         // instead of saving and restoring all the state, we simply start the
         // file anew. This will cause it to encounter the same include
@@ -4052,12 +4061,15 @@ void Parser::Serialize() {
   const auto enum__ = builder_.CreateVectorOfSortedTables(&enum_offsets);
   const auto fiid__ = builder_.CreateString(file_identifier_);
   const auto fext__ = builder_.CreateString(file_extension_);
+  // TOME_EDIT - WR: Adding root type name string to code generation
+  auto rtnm__ = builder_.CreateString(root_type_name_);
   const auto serv__ = builder_.CreateVectorOfSortedTables(&service_offsets);
   const auto schema_offset = reflection::CreateSchema(
-      builder_, objs__, enum__, fiid__, fext__,
+      builder_, objs__, enum__, fiid__, fext__, rtnm__,
       (root_struct_def_ ? root_struct_def_->serialized_location : 0), serv__,
       static_cast<reflection::AdvancedFeatures>(advanced_features_),
       schema_files__);
+  // TOME_END
   if (opts.size_prefixed) {
     builder_.FinishSizePrefixed(schema_offset, reflection::SchemaIdentifier());
   } else {

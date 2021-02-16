@@ -680,6 +680,16 @@ class CppGenerator : public BaseGenerator {
         code_ += "}";
         code_ += "";
       }
+      
+      // TOME_EDIT - WR: Adding root type name string to code generation
+      if (parser_.root_type_name_.length()) {
+        // Return the root type name
+        code_ += "constexpr char* {{STRUCT_NAME}}RootName() {";
+        code_ += " return \"" + parser_.root_type_name_ + "\";";
+        code_ += "}";
+        code_ += "";
+      }
+      // TOME_END
 
       // Finish a buffer with a given root object:
       code_ += "inline void Finish{{STRUCT_NAME}}Buffer(";
@@ -3941,7 +3951,7 @@ class CppGenerator : public BaseGenerator {
 
     code_ +=
         "FLATBUFFERS_MANUALLY_ALIGNED_STRUCT({{ALIGN}}) "
-        "{{STRUCT_NAME}} FLATBUFFERS_FINAL_CLASS {";
+        "{{STRUCT_NAME}} final {";
     code_ += " private:";
 
     int padding_id = 0;

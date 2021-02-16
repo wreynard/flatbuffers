@@ -1246,6 +1246,9 @@ class Parser : public ParserState {
   StructDef *root_struct_def_;
   std::string file_identifier_;
   std::string file_extension_;
+  // TOME_EDIT - WR: Adding root type name string to code generation
+  std::string root_type_name_;
+  // TOME_END
 
   std::map<uint64_t, std::string> included_files_;
   std::map<std::string, std::set<IncludedFile>> files_included_per_file_;

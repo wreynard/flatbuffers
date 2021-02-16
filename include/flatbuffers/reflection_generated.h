@@ -259,7 +259,7 @@ inline ::flatbuffers::Offset<Type> CreateType(
   return builder_.Finish();
 }
 
-struct KeyValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct KeyValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef KeyValueBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_KEY = 4,
@@ -337,7 +337,7 @@ inline ::flatbuffers::Offset<KeyValue> CreateKeyValueDirect(
       value__);
 }
 
-struct EnumVal FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct EnumVal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef EnumValBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -450,7 +450,7 @@ inline ::flatbuffers::Offset<EnumVal> CreateEnumValDirect(
       attributes__);
 }
 
-struct Enum FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct Enum FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef EnumBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -601,7 +601,7 @@ inline ::flatbuffers::Offset<Enum> CreateEnumDirect(
       declaration_file__);
 }
 
-struct Field FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct Field FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef FieldBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -831,7 +831,7 @@ inline ::flatbuffers::Offset<Field> CreateFieldDirect(
       offset64);
 }
 
-struct Object FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct Object FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ObjectBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -992,7 +992,7 @@ inline ::flatbuffers::Offset<Object> CreateObjectDirect(
       declaration_file__);
 }
 
-struct RPCCall FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct RPCCall FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef RPCCallBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -1114,7 +1114,7 @@ inline ::flatbuffers::Offset<RPCCall> CreateRPCCallDirect(
       documentation__);
 }
 
-struct Service FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct Service FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ServiceBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -1322,7 +1322,7 @@ inline ::flatbuffers::Offset<SchemaFile> CreateSchemaFileDirect(
       included_filenames__);
 }
 
-struct Schema FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+struct Schema FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef SchemaBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_OBJECTS = 4,
@@ -1330,9 +1330,7 @@ struct Schema FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FILE_IDENT = 8,
     VT_FILE_EXT = 10,
     VT_ROOT_TABLE = 12,
-    VT_SERVICES = 14,
-    VT_ADVANCED_FEATURES = 16,
-    VT_FBS_FILES = 18
+    VT_SERVICES = 14
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<reflection::Object>> *objects() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<reflection::Object>> *>(VT_OBJECTS);
@@ -1345,6 +1343,9 @@ struct Schema FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::String *file_ext() const {
     return GetPointer<const ::flatbuffers::String *>(VT_FILE_EXT);
+  }
+  const flatbuffers::String *root_table_name() const {
+    return GetPointer<const flatbuffers::String *>(VT_ROOT_TABLE_NAME);
   }
   const reflection::Object *root_table() const {
     return GetPointer<const reflection::Object *>(VT_ROOT_TABLE);
@@ -1372,6 +1373,8 @@ struct Schema FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(file_ident()) &&
            VerifyOffset(verifier, VT_FILE_EXT) &&
            verifier.VerifyString(file_ext()) &&
+           VerifyOffset(verifier, VT_ROOT_TABLE_NAME) &&
+           verifier.VerifyString(root_table_name()) &&
            VerifyOffset(verifier, VT_ROOT_TABLE) &&
            verifier.VerifyTable(root_table()) &&
            VerifyOffset(verifier, VT_SERVICES) &&
@@ -1401,7 +1404,7 @@ struct SchemaBuilder {
   void add_file_ext(::flatbuffers::Offset<::flatbuffers::String> file_ext) {
     fbb_.AddOffset(Schema::VT_FILE_EXT, file_ext);
   }
-  void add_root_table(::flatbuffers::Offset<reflection::Object> root_table) {
+  void add_root_table(flatbuffers::Offset<reflection::Object> root_table) {
     fbb_.AddOffset(Schema::VT_ROOT_TABLE, root_table);
   }
   void add_services(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Service>>> services) {
@@ -1426,21 +1429,20 @@ struct SchemaBuilder {
   }
 };
 
-inline ::flatbuffers::Offset<Schema> CreateSchema(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Object>>> objects = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Enum>>> enums = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> file_ident = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> file_ext = 0,
-    ::flatbuffers::Offset<reflection::Object> root_table = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Service>>> services = 0,
-    reflection::AdvancedFeatures advanced_features = static_cast<reflection::AdvancedFeatures>(0),
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::SchemaFile>>> fbs_files = 0) {
+inline flatbuffers::Offset<Schema> CreateSchema(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<reflection::Object>>> objects = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<reflection::Enum>>> enums = 0,
+    flatbuffers::Offset<flatbuffers::String> file_ident = 0,
+    flatbuffers::Offset<flatbuffers::String> file_ext = 0,
+    flatbuffers::Offset<reflection::Object> root_table = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<reflection::Service>>> services = 0) {
   SchemaBuilder builder_(_fbb);
   builder_.add_advanced_features(advanced_features);
   builder_.add_fbs_files(fbs_files);
   builder_.add_services(services);
   builder_.add_root_table(root_table);
+  builder_.add_root_table_name(root_table_name);
   builder_.add_file_ext(file_ext);
   builder_.add_file_ident(file_ident);
   builder_.add_enums(enums);
@@ -1454,14 +1456,13 @@ inline ::flatbuffers::Offset<Schema> CreateSchemaDirect(
     std::vector<::flatbuffers::Offset<reflection::Enum>> *enums = nullptr,
     const char *file_ident = nullptr,
     const char *file_ext = nullptr,
-    ::flatbuffers::Offset<reflection::Object> root_table = 0,
-    std::vector<::flatbuffers::Offset<reflection::Service>> *services = nullptr,
-    reflection::AdvancedFeatures advanced_features = static_cast<reflection::AdvancedFeatures>(0),
-    std::vector<::flatbuffers::Offset<reflection::SchemaFile>> *fbs_files = nullptr) {
+    flatbuffers::Offset<reflection::Object> root_table = 0,
+    std::vector<flatbuffers::Offset<reflection::Service>> *services = nullptr) {
   auto objects__ = objects ? _fbb.CreateVectorOfSortedTables<reflection::Object>(objects) : 0;
   auto enums__ = enums ? _fbb.CreateVectorOfSortedTables<reflection::Enum>(enums) : 0;
   auto file_ident__ = file_ident ? _fbb.CreateString(file_ident) : 0;
   auto file_ext__ = file_ext ? _fbb.CreateString(file_ext) : 0;
+  auto root_table_name__ = root_table_name ? _fbb.CreateString(root_table_name) : 0;
   auto services__ = services ? _fbb.CreateVectorOfSortedTables<reflection::Service>(services) : 0;
   auto fbs_files__ = fbs_files ? _fbb.CreateVectorOfSortedTables<reflection::SchemaFile>(fbs_files) : 0;
   return reflection::CreateSchema(
@@ -1470,6 +1471,7 @@ inline ::flatbuffers::Offset<Schema> CreateSchemaDirect(
       enums__,
       file_ident__,
       file_ext__,
+      root_table_name__,
       root_table,
       services__,
       advanced_features,
