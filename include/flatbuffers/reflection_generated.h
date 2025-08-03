@@ -45,7 +45,7 @@ struct SchemaFileBuilder;
 struct Schema;
 struct SchemaBuilder;
 
-enum BaseType {
+enum BaseType : int8_t {
   None = 0,
   UType = 1,
   Bool = 2,
@@ -128,7 +128,7 @@ inline const char *EnumNameBaseType(BaseType e) {
 }
 
 /// New schema language features that are not supported by old code generators.
-enum AdvancedFeatures {
+enum AdvancedFeatures : uint64_t {
   AdvancedArrayFeatures = 1ULL,
   AdvancedUnionFeatures = 2ULL,
   OptionalScalars = 4ULL,
@@ -259,7 +259,7 @@ inline ::flatbuffers::Offset<Type> CreateType(
   return builder_.Finish();
 }
 
-struct KeyValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct KeyValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef KeyValueBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_KEY = 4,
@@ -337,7 +337,7 @@ inline ::flatbuffers::Offset<KeyValue> CreateKeyValueDirect(
       value__);
 }
 
-struct EnumVal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct EnumVal FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EnumValBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -450,7 +450,7 @@ inline ::flatbuffers::Offset<EnumVal> CreateEnumValDirect(
       attributes__);
 }
 
-struct Enum FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Enum FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EnumBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -601,7 +601,7 @@ inline ::flatbuffers::Offset<Enum> CreateEnumDirect(
       declaration_file__);
 }
 
-struct Field FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Field FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FieldBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -831,7 +831,7 @@ inline ::flatbuffers::Offset<Field> CreateFieldDirect(
       offset64);
 }
 
-struct Object FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Object FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -992,7 +992,7 @@ inline ::flatbuffers::Offset<Object> CreateObjectDirect(
       declaration_file__);
 }
 
-struct RPCCall FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct RPCCall FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RPCCallBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -1114,7 +1114,7 @@ inline ::flatbuffers::Offset<RPCCall> CreateRPCCallDirect(
       documentation__);
 }
 
-struct Service FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Service FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ServiceBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAME = 4,
@@ -1322,15 +1322,18 @@ inline ::flatbuffers::Offset<SchemaFile> CreateSchemaFileDirect(
       included_filenames__);
 }
 
-struct Schema FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Schema FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SchemaBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_OBJECTS = 4,
     VT_ENUMS = 6,
     VT_FILE_IDENT = 8,
     VT_FILE_EXT = 10,
-    VT_ROOT_TABLE = 12,
-    VT_SERVICES = 14
+    VT_ROOT_TABLE_NAME = 12,
+    VT_ROOT_TABLE = 14,
+    VT_SERVICES = 16,
+    VT_ADVANCED_FEATURES = 18,
+    VT_FBS_FILES = 20
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<reflection::Object>> *objects() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<reflection::Object>> *>(VT_OBJECTS);
@@ -1344,8 +1347,8 @@ struct Schema FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const ::flatbuffers::String *file_ext() const {
     return GetPointer<const ::flatbuffers::String *>(VT_FILE_EXT);
   }
-  const flatbuffers::String *root_table_name() const {
-    return GetPointer<const flatbuffers::String *>(VT_ROOT_TABLE_NAME);
+  const ::flatbuffers::String *root_table_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ROOT_TABLE_NAME);
   }
   const reflection::Object *root_table() const {
     return GetPointer<const reflection::Object *>(VT_ROOT_TABLE);
@@ -1404,7 +1407,10 @@ struct SchemaBuilder {
   void add_file_ext(::flatbuffers::Offset<::flatbuffers::String> file_ext) {
     fbb_.AddOffset(Schema::VT_FILE_EXT, file_ext);
   }
-  void add_root_table(flatbuffers::Offset<reflection::Object> root_table) {
+  void add_root_table_name(::flatbuffers::Offset<::flatbuffers::String> root_table_name) {
+    fbb_.AddOffset(Schema::VT_ROOT_TABLE_NAME, root_table_name);
+  }
+  void add_root_table(::flatbuffers::Offset<reflection::Object> root_table) {
     fbb_.AddOffset(Schema::VT_ROOT_TABLE, root_table);
   }
   void add_services(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Service>>> services) {
@@ -1429,14 +1435,17 @@ struct SchemaBuilder {
   }
 };
 
-inline flatbuffers::Offset<Schema> CreateSchema(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<reflection::Object>>> objects = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<reflection::Enum>>> enums = 0,
-    flatbuffers::Offset<flatbuffers::String> file_ident = 0,
-    flatbuffers::Offset<flatbuffers::String> file_ext = 0,
-    flatbuffers::Offset<reflection::Object> root_table = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<reflection::Service>>> services = 0) {
+inline ::flatbuffers::Offset<Schema> CreateSchema(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Object>>> objects = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Enum>>> enums = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> file_ident = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> file_ext = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> root_table_name = 0,
+    ::flatbuffers::Offset<reflection::Object> root_table = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::Service>>> services = 0,
+    reflection::AdvancedFeatures advanced_features = static_cast<reflection::AdvancedFeatures>(0),
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<reflection::SchemaFile>>> fbs_files = 0) {
   SchemaBuilder builder_(_fbb);
   builder_.add_advanced_features(advanced_features);
   builder_.add_fbs_files(fbs_files);
@@ -1456,8 +1465,11 @@ inline ::flatbuffers::Offset<Schema> CreateSchemaDirect(
     std::vector<::flatbuffers::Offset<reflection::Enum>> *enums = nullptr,
     const char *file_ident = nullptr,
     const char *file_ext = nullptr,
-    flatbuffers::Offset<reflection::Object> root_table = 0,
-    std::vector<flatbuffers::Offset<reflection::Service>> *services = nullptr) {
+    const char *root_table_name = nullptr,
+    ::flatbuffers::Offset<reflection::Object> root_table = 0,
+    std::vector<::flatbuffers::Offset<reflection::Service>> *services = nullptr,
+    reflection::AdvancedFeatures advanced_features = static_cast<reflection::AdvancedFeatures>(0),
+    std::vector<::flatbuffers::Offset<reflection::SchemaFile>> *fbs_files = nullptr) {
   auto objects__ = objects ? _fbb.CreateVectorOfSortedTables<reflection::Object>(objects) : 0;
   auto enums__ = enums ? _fbb.CreateVectorOfSortedTables<reflection::Enum>(enums) : 0;
   auto file_ident__ = file_ident ? _fbb.CreateString(file_ident) : 0;
@@ -1512,6 +1524,10 @@ inline bool VerifySizePrefixedSchemaBuffer(
 
 inline const char *SchemaExtension() {
   return "bfbs";
+}
+
+constexpr const char* SchemaRootName() {
+ return "reflection.Schema";
 }
 
 inline void FinishSchemaBuffer(

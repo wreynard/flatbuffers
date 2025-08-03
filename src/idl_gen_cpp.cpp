@@ -684,7 +684,7 @@ class CppGenerator : public BaseGenerator {
       // TOME_EDIT - WR: Adding root type name string to code generation
       if (parser_.root_type_name_.length()) {
         // Return the root type name
-        code_ += "constexpr char* {{STRUCT_NAME}}RootName() {";
+        code_ += "constexpr const char* {{STRUCT_NAME}}RootName() {";
         code_ += " return \"" + parser_.root_type_name_ + "\";";
         code_ += "}";
         code_ += "";
