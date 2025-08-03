@@ -64,7 +64,7 @@ static bool FileExistsRaw(const char *name) {
 }
 
 // TOME_EDIT - WR: Adding a mechanism to locate reflection.fbs file (only works on machine that ran premake)
-static const char* ReflectionFbsPath()
+const char* ReflectionFbsPath()
 {
 #ifndef PATH_REFLECTION_FBS
 #define PATH_REFLECTION_FBS "."
